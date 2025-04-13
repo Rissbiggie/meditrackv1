@@ -10,7 +10,7 @@ export function Navbar({ className }: NavbarProps) {
   const [location, setLocation] = useLocation();
   
   return (
-    <nav className={cn("fixed bottom-0 left-0 right-0 bg-secondary text-primary shadow-lg z-10", className)}>
+    <nav className={cn("fixed bottom-0 left-0 right-0 bg-green-600 text-white shadow-lg z-10", className)}>
       <div className="flex justify-around">
         <NavItem 
           icon="home" 

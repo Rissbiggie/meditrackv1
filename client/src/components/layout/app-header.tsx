@@ -38,7 +38,7 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
   };
 
   return (
-    <header className="bg-primary/90 backdrop-blur-sm fixed top-0 left-0 right-0 z-10">
+    <header className="bg-green-600 backdrop-blur-sm fixed top-0 left-0 right-0 z-10">
       <div className="flex items-center justify-between px-4 py-3">
         <Sheet>
           <SheetTrigger asChild>
