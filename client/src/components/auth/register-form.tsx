@@ -1,13 +1,14 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { UserRole } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -26,7 +27,8 @@ const formSchema = z.object({
 });
 
 export function RegisterForm() {
-  const { registerMutation } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,12 +45,16 @@ export function RegisterForm() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const { confirmPassword, agreeTerms, ...userData } = values;
+    setIsLoading(true);
     
-    registerMutation.mutate({
-      ...userData,
-      role: UserRole.USER,
-    });
+    // Simulate registration
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Registration Note",
+        description: "Registration system is under maintenance. Please try again later.",
+      });
+    }, 1500);
   };
 
   return (
@@ -210,9 +216,9 @@ export function RegisterForm() {
         <Button 
           type="submit" 
           className="w-full bg-secondary hover:bg-secondary/90 text-primary font-medium py-3 px-4 rounded-lg transition-all duration-300"
-          disabled={registerMutation.isPending}
+          disabled={isLoading}
         >
-          {registerMutation.isPending ? (
+          {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Creating Account...

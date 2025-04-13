@@ -1,22 +1,11 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useState } from "react";
 import { Logo } from "@/components/logo";
 import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
 
   return (
     <section className="flex flex-col items-center justify-center min-h-screen px-6 bg-primary login-bg">
@@ -31,7 +20,7 @@ export default function AuthPage() {
               variant="link"
               className={`flex-1 pb-2 font-medium border-b-2 ${
                 activeTab === "login"
-                  ? "border-secondary text-white"
+                  ? "border-secondary text-secondary"
                   : "border-transparent text-white/60"
               }`}
               onClick={() => setActiveTab("login")}
@@ -42,7 +31,7 @@ export default function AuthPage() {
               variant="link"
               className={`flex-1 pb-2 font-medium border-b-2 ${
                 activeTab === "register"
-                  ? "border-secondary text-white"
+                  ? "border-secondary text-secondary"
                   : "border-transparent text-white/60"
               }`}
               onClick={() => setActiveTab("register")}
