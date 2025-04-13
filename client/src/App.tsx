@@ -1,5 +1,10 @@
+
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/hooks/use-auth";
+import { EmergencyProvider } from "@/hooks/use-emergency";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -14,39 +19,40 @@ import { useEffect } from "react";
 import { connectWebSocket } from "@/lib/websocket";
 
 function App() {
-  // Connect to WebSocket when the app loads
   useEffect(() => {
     connectWebSocket();
   }, []);
 
   return (
-    <>
-      <Switch>
-        <ProtectedRoute path="/" component={HomePage} />
-        <ProtectedRoute path="/dashboard" component={DashboardPage} />
-        <ProtectedRoute path="/services" component={ServicesPage} />
-        <ProtectedRoute path="/settings" component={SettingsPage} />
-        <ProtectedRoute 
-          path="/admin" 
-          component={AdminPage} 
-          allowedRoles={[UserRole.ADMIN]} 
-        />
-        <ProtectedRoute 
-          path="/response-team" 
-          component={ResponseTeamPage} 
-          allowedRoles={[UserRole.RESPONSE_TEAM]} 
-        />
-        <Route path="/auth">
-          <AuthPage />
-        </Route>
-        <Route>
-          <NotFound />
-        </Route>
-      </Switch>
-      
-      {/* Toast notifications */}
-      <Toaster />
-    </>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <EmergencyProvider>
+          <Switch>
+            <ProtectedRoute path="/" component={HomePage} />
+            <ProtectedRoute path="/dashboard" component={DashboardPage} />
+            <ProtectedRoute path="/services" component={ServicesPage} />
+            <ProtectedRoute path="/settings" component={SettingsPage} />
+            <ProtectedRoute 
+              path="/admin" 
+              component={AdminPage} 
+              allowedRoles={[UserRole.ADMIN]} 
+            />
+            <ProtectedRoute 
+              path="/response-team" 
+              component={ResponseTeamPage} 
+              allowedRoles={[UserRole.RESPONSE_TEAM]} 
+            />
+            <Route path="/auth">
+              <AuthPage />
+            </Route>
+            <Route>
+              <NotFound />
+            </Route>
+          </Switch>
+          <Toaster />
+        </EmergencyProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
