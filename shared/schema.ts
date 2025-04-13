@@ -1,8 +1,11 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, foreignKey, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import { relations } from "drizzle-orm";
 import { z } from "zod";
 
-// User roles
+// User roles enum
+export const userRoleEnum = pgEnum('user_role', ['user', 'response_team', 'admin']);
+
 export enum UserRole {
   USER = "user",
   RESPONSE_TEAM = "response_team",
@@ -20,6 +23,15 @@ export const users = pgTable("users", {
   phone: text("phone").notNull(),
   role: text("role").notNull().default(UserRole.USER),
 });
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  medicalInfo: one(medicalInfo, {
+    fields: [users.id],
+    references: [medicalInfo.userId],
+  }),
+  emergencyContacts: many(emergencyContacts),
+  emergencyAlerts: many(emergencyAlerts),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -39,12 +51,19 @@ export const loginUserSchema = z.object({
 // Medical info table
 export const medicalInfo = pgTable("medical_info", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   bloodType: text("blood_type"),
   allergies: text("allergies"),
   conditions: text("conditions"),
   medications: text("medications"),
 });
+
+export const medicalInfoRelations = relations(medicalInfo, ({ one }) => ({
+  user: one(users, {
+    fields: [medicalInfo.userId],
+    references: [users.id],
+  }),
+}));
 
 export const insertMedicalInfoSchema = createInsertSchema(medicalInfo).pick({
   userId: true,
@@ -57,11 +76,18 @@ export const insertMedicalInfoSchema = createInsertSchema(medicalInfo).pick({
 // Emergency contacts table
 export const emergencyContacts = pgTable("emergency_contacts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   name: text("name").notNull(),
   relationship: text("relationship").notNull(),
   phone: text("phone").notNull(),
 });
+
+export const emergencyContactsRelations = relations(emergencyContacts, ({ one }) => ({
+  user: one(users, {
+    fields: [emergencyContacts.userId],
+    references: [users.id],
+  }),
+}));
 
 export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts).pick({
   userId: true,
@@ -73,7 +99,8 @@ export const insertEmergencyContactSchema = createInsertSchema(emergencyContacts
 // Emergency alerts table
 export const emergencyAlerts = pgTable("emergency_alerts", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  ambulanceId: integer("ambulance_id").references(() => ambulanceUnits.id),
   latitude: text("latitude").notNull(),
   longitude: text("longitude").notNull(),
   emergencyType: text("emergency_type").notNull(),
@@ -82,13 +109,26 @@ export const emergencyAlerts = pgTable("emergency_alerts", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const insertEmergencyAlertSchema = createInsertSchema(emergencyAlerts).pick({
-  userId: true,
-  latitude: true,
-  longitude: true,
-  emergencyType: true,
-  description: true,
-});
+export const emergencyAlertsRelations = relations(emergencyAlerts, ({ one }) => ({
+  user: one(users, {
+    fields: [emergencyAlerts.userId],
+    references: [users.id],
+  }),
+  ambulance: one(ambulanceUnits, {
+    fields: [emergencyAlerts.ambulanceId],
+    references: [ambulanceUnits.id],
+  }),
+}));
+
+export const insertEmergencyAlertSchema = createInsertSchema(emergencyAlerts)
+  .omit({ ambulanceId: true })
+  .pick({
+    userId: true,
+    latitude: true,
+    longitude: true,
+    emergencyType: true,
+    description: true,
+  });
 
 // Ambulance units table
 export const ambulanceUnits = pgTable("ambulance_units", {
@@ -98,6 +138,10 @@ export const ambulanceUnits = pgTable("ambulance_units", {
   longitude: text("longitude"),
   status: text("status").notNull().default("available"),
 });
+
+export const ambulanceUnitsRelations = relations(ambulanceUnits, ({ many }) => ({
+  emergencyAlerts: many(emergencyAlerts),
+}));
 
 export const insertAmbulanceUnitSchema = createInsertSchema(ambulanceUnits).pick({
   name: true,
