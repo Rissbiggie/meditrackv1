@@ -4,7 +4,7 @@ import { Redirect, Route } from "wouter";
 
 type ProtectedRouteProps = {
   path: string;
-  component: React.ComponentType;
+  component: React.ComponentType<any>;
   allowedRoles?: string[];
 };
 
@@ -13,34 +13,30 @@ export function ProtectedRoute({
   component: Component,
   allowedRoles,
 }: ProtectedRouteProps) {
-  const { user, isLoading } = useAuth();
+  try {
+    const { user, isLoading } = useAuth();
 
-  if (isLoading) {
     return (
       <Route path={path}>
-        <div className="flex items-center justify-center min-h-screen bg-primary">
-          <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-        </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-screen bg-primary">
+            <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+          </div>
+        ) : !user ? (
+          <Redirect to="/auth" />
+        ) : allowedRoles && !allowedRoles.includes(user.role) ? (
+          <Redirect to="/" />
+        ) : (
+          <Component />
+        )}
       </Route>
     );
-  }
-
-  if (!user) {
+  } catch (error) {
+    console.error("Error in ProtectedRoute:", error);
     return (
       <Route path={path}>
         <Redirect to="/auth" />
       </Route>
     );
   }
-
-  // Check if user has the required role
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return (
-      <Route path={path}>
-        <Redirect to="/" />
-      </Route>
-    );
-  }
-
-  return <Route path={path} component={Component} />;
 }

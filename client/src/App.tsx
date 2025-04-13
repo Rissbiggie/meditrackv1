@@ -10,34 +10,41 @@ import AdminPage from "@/pages/admin-page";
 import ResponseTeamPage from "@/pages/response-team-page";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { UserRole } from "@shared/schema";
-
-function Router() {
-  return (
-    <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
-      <ProtectedRoute path="/dashboard" component={DashboardPage} />
-      <ProtectedRoute path="/services" component={ServicesPage} />
-      <ProtectedRoute path="/settings" component={SettingsPage} />
-      <ProtectedRoute 
-        path="/admin" 
-        component={AdminPage} 
-        allowedRoles={[UserRole.ADMIN]} 
-      />
-      <ProtectedRoute 
-        path="/response-team" 
-        component={ResponseTeamPage} 
-        allowedRoles={[UserRole.RESPONSE_TEAM]} 
-      />
-      <Route path="/auth" component={AuthPage} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+import { useEffect } from "react";
+import { connectWebSocket } from "@/lib/websocket";
 
 function App() {
+  // Connect to WebSocket when the app loads
+  useEffect(() => {
+    connectWebSocket();
+  }, []);
+
   return (
     <>
-      <Router />
+      <Switch>
+        <ProtectedRoute path="/" component={HomePage} />
+        <ProtectedRoute path="/dashboard" component={DashboardPage} />
+        <ProtectedRoute path="/services" component={ServicesPage} />
+        <ProtectedRoute path="/settings" component={SettingsPage} />
+        <ProtectedRoute 
+          path="/admin" 
+          component={AdminPage} 
+          allowedRoles={[UserRole.ADMIN]} 
+        />
+        <ProtectedRoute 
+          path="/response-team" 
+          component={ResponseTeamPage} 
+          allowedRoles={[UserRole.RESPONSE_TEAM]} 
+        />
+        <Route path="/auth">
+          <AuthPage />
+        </Route>
+        <Route>
+          <NotFound />
+        </Route>
+      </Switch>
+      
+      {/* Toast notifications */}
       <Toaster />
     </>
   );
