@@ -15,15 +15,17 @@ export function ProtectedRoute({
   component: Component,
   allowedRoles,
 }: ProtectedRouteProps) {
-  // Get user data directly instead of using useAuth
+  // Get user data directly from API
   const { 
-    data: user = null, 
+    data: user, 
     isLoading,
-    error
+    error,
+    isError
   } = useQuery<SelectUser | null>({
     queryKey: ['/api/user'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
-    retry: false,
+    retry: 1,
+    staleTime: 10000, // 10 seconds
   });
 
   if (error) {
@@ -32,17 +34,25 @@ export function ProtectedRoute({
 
   return (
     <Route path={path}>
-      {isLoading ? (
-        <div className="flex items-center justify-center min-h-screen bg-primary">
-          <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-        </div>
-      ) : !user ? (
-        <Redirect to="/auth" />
-      ) : allowedRoles && !allowedRoles.includes(user.role) ? (
-        <Redirect to="/" />
-      ) : (
-        <Component />
-      )}
+      {(props) => {
+        if (isLoading) {
+          return (
+            <div className="flex items-center justify-center min-h-screen bg-primary">
+              <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+            </div>
+          );
+        }
+        
+        if (!user || isError) {
+          return <Redirect to="/auth" />;
+        }
+        
+        if (allowedRoles && !allowedRoles.includes(user.role)) {
+          return <Redirect to="/" />;
+        }
+        
+        return <Component {...props} />;
+      }}
     </Route>
   );
 }

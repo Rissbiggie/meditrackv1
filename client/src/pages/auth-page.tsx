@@ -1,20 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Logo } from "@/components/logo";
 import { LoginForm } from "@/components/auth/login-form";
 import { RegisterForm } from "@/components/auth/register-form";
 import { Button } from "@/components/ui/button";
-
-// Import components from Tanstack/React Query directly
-import { useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { InsertUser, LoginUser } from "@shared/schema";
+import { InsertUser, LoginUser, User as SelectUser } from "@shared/schema";
 
 export default function AuthPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  // Check if user is already logged in
+  const { data: user, isLoading } = useQuery<SelectUser | null>({
+    queryKey: ['/api/user'],
+    queryFn: getQueryFn({ on401: 'returnNull' }),
+    retry: false,
+  });
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !isLoading) {
+      setLocation("/");
+    }
+  }, [user, isLoading, setLocation]);
 
   // Create standalone mutations for this page
   const loginMutation = useMutation({
@@ -26,9 +38,11 @@ export default function AuthPage() {
       queryClient.setQueryData(["/api/user"], user);
       toast({
         title: "Login successful",
-        description: `Welcome back, ${user.firstName}!`,
+        description: `Welcome back!`,
       });
-      setLocation("/");
+      
+      // Force page reload to ensure proper state update
+      window.location.href = "/";
     },
     onError: (error: Error) => {
       toast({
@@ -50,7 +64,9 @@ export default function AuthPage() {
         title: "Registration successful",
         description: "Your account has been created successfully.",
       });
-      setLocation("/");
+      
+      // Force page reload to ensure proper state update
+      window.location.href = "/";
     },
     onError: (error: Error) => {
       toast({
@@ -69,6 +85,20 @@ export default function AuthPage() {
   const handleRegister = (userData: InsertUser) => {
     registerMutation.mutate(userData);
   };
+
+  // Show loading or redirect if user is already logged in
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-primary">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary"></div>
+      </div>
+    );
+  }
+
+  if (user) {
+    // This should not render as the useEffect will redirect
+    return null;
+  }
 
   return (
     <section className="flex flex-col items-center justify-center min-h-screen px-6 bg-primary login-bg">
