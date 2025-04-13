@@ -1,4 +1,3 @@
-
 import { Switch, Route } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -28,6 +27,11 @@ function App() {
       <AuthProvider>
         <EmergencyProvider>
           <Switch>
+            <Route path="/home">
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            </Route>
             <ProtectedRoute path="/" component={HomePage} />
             <ProtectedRoute path="/dashboard" component={DashboardPage} />
             <ProtectedRoute path="/services" component={ServicesPage} />
