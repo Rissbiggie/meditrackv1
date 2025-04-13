@@ -16,7 +16,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const medicalInfo = await storage.getMedicalInfoByUserId(req.user.id);
       return res.json(medicalInfo);
@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const updatedInfo = await storage.updateMedicalInfo({
         ...req.body,
@@ -49,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const contacts = await storage.getEmergencyContactsByUserId(req.user.id);
       return res.json(contacts);
@@ -64,7 +64,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const alert = await storage.createEmergencyAlert({
         ...req.body,
@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const emergencies = await storage.getActiveEmergencies();
       return res.json(emergencies);
@@ -97,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const emergencies = await storage.getUserEmergencyHistory(req.user.id);
       return res.json(emergencies);
@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const emergencies = await storage.getRecentEmergencies();
       return res.json(emergencies);
@@ -127,7 +127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const emergencyId = parseInt(req.params.id);
       const resolvedEmergency = await storage.resolveEmergency(emergencyId);
@@ -143,7 +143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const { emergencyId, ambulanceId } = req.body;
       const updatedEmergency = await storage.assignAmbulance(emergencyId, ambulanceId);
@@ -159,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const ambulances = await storage.getAmbulanceUnits();
       return res.json(ambulances);
@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const ambulances = await storage.getAvailableAmbulanceUnits();
       return res.json(ambulances);
@@ -189,13 +189,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const { latitude, longitude } = req.query;
       if (!latitude || !longitude) {
         return res.status(400).json({ message: "Latitude and longitude required" });
       }
-      
+
       const ambulances = await storage.getNearbyAmbulances(
         parseFloat(latitude as string), 
         parseFloat(longitude as string)
@@ -212,13 +212,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
+
     try {
       const { latitude, longitude } = req.query;
       if (!latitude || !longitude) {
         return res.status(400).json({ message: "Latitude and longitude required" });
       }
-      
+
       const facilities = await storage.getNearbyFacilities(
         parseFloat(latitude as string), 
         parseFloat(longitude as string)
@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!req.isAuthenticated() || req.user.role !== 'admin') {
       return res.status(401).json({ message: "Not authorized" });
     }
-    
+
     try {
       const users = await storage.getAllUsers();
       return res.json(users);
@@ -244,6 +244,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  app.post("/api/register", async (req, res, next) => {
+    try {
+      const existingUser = await storage.getUserByUsername(req.body.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Set role as admin for the first user
+      const userCount = await storage.getUserCount();
+      const role = userCount === 0 ? "admin" : "user";
+
+      const newUser = await storage.createUser({
+        ...req.body,
+        role
+      });
+      return res.status(201).json(newUser);
+    } catch (error) {
+      console.error("Error registering user:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
 
   // Create HTTP server
   const httpServer = createServer(app);
@@ -257,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
-        
+
         // Handle location updates
         if (data.type === 'location_update') {
           // Broadcast to all relevant clients
@@ -275,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           });
         }
-        
+
         // Handle emergency broadcasts
         if (data.type === 'emergency_alert') {
           // Store emergency in database
@@ -286,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             emergencyType: data.emergencyType,
             description: data.description || ''
           });
-          
+
           // Broadcast emergency to response teams
           wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
