@@ -7,7 +7,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { UserRole, InsertUser } from "@shared/schema";
-import { useAuth } from "@/hooks/use-auth";
+
+interface RegisterFormProps {
+  onSubmit: (data: InsertUser) => void;
+  isPending: boolean;
+}
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -25,10 +29,7 @@ const formSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export function RegisterForm() {
-  const { registerMutation } = useAuth();
-  const isLoading = registerMutation.isPending;
-
+export function RegisterForm({ onSubmit, isPending }: RegisterFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,7 +44,7 @@ export function RegisterForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     const userData: InsertUser = {
       firstName: values.firstName,
       lastName: values.lastName,
@@ -54,12 +55,12 @@ export function RegisterForm() {
       role: UserRole.USER
     };
     
-    registerMutation.mutate(userData);
+    onSubmit(userData);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -216,9 +217,9 @@ export function RegisterForm() {
         <Button 
           type="submit" 
           className="w-full bg-secondary hover:bg-secondary/90 text-primary font-medium py-3 px-4 rounded-lg transition-all duration-300"
-          disabled={isLoading}
+          disabled={isPending}
         >
-          {isLoading ? (
+          {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Creating Account...

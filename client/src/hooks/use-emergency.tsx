@@ -1,15 +1,15 @@
 import { useState, createContext, useContext, ReactNode, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, queryClient, getQueryFn } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/use-auth';
 import { useLocation } from '@/hooks/use-maps';
 import { connectWebSocket, sendWSMessage, addWSListener } from '@/lib/websocket';
 import { 
   EmergencyAlert, 
   InsertEmergencyAlert, 
   AmbulanceUnit,
-  MedicalFacility
+  MedicalFacility,
+  User as SelectUser
 } from '@shared/schema';
 
 interface EmergencyContextType {
@@ -30,9 +30,13 @@ const EmergencyContext = createContext<EmergencyContextType | null>(null);
 export function EmergencyProvider({ children }: { children: ReactNode }) {
   const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const { toast } = useToast();
-  const auth = useAuth();
-  const user = auth?.user || null;
   const { getCurrentLocation } = useLocation();
+  
+  // Get current user directly from the API instead of using useAuth
+  const { data: user = null } = useQuery<SelectUser | null>({
+    queryKey: ['/api/user'],
+    queryFn: getQueryFn({ on401: 'returnNull' }),
+  });
 
   // Get active emergencies
   const {

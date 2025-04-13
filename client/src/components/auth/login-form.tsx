@@ -8,8 +8,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
-import { useAuth } from "@/hooks/use-auth";
 import { LoginUser } from "@shared/schema";
+
+interface LoginFormProps {
+  onSubmit: (data: LoginUser) => void;
+  isPending: boolean;
+}
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -17,10 +21,8 @@ const formSchema = z.object({
   remember: z.boolean().optional(),
 });
 
-export function LoginForm() {
+export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
   const [rememberMe, setRememberMe] = useState(false);
-  const { loginMutation } = useAuth();
-  const isLoading = loginMutation.isPending;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,18 +33,18 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     const loginData: LoginUser = {
       username: values.username,
       password: values.password
     };
     
-    loginMutation.mutate(loginData);
+    onSubmit(loginData);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="username"
@@ -95,9 +97,9 @@ export function LoginForm() {
         <Button 
           type="submit" 
           className="w-full bg-secondary hover:bg-secondary/90 text-primary font-medium py-3 px-4 rounded-lg transition-all duration-300"
-          disabled={isLoading}
+          disabled={isPending}
         >
-          {isLoading ? (
+          {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Logging in...
