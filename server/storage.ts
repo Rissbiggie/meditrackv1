@@ -64,11 +64,11 @@ export interface IStorage {
   getNearbyFacilities(lat: number, lng: number): Promise<MedicalFacility[]>;
   
   // Session storage
-  sessionStore: session.SessionStore;
+  sessionStore: any; // Express session store instance
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: any; // SessionStore instance
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({ 

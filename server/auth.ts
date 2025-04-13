@@ -30,14 +30,14 @@ async function comparePasswords(supplied: string, stored: string) {
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || "meditrack-secret-key",
+    secret: "meditrack-secret-key-development",
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore,
     cookie: {
       maxAge: 86400000, // 24 hours
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production'
+      secure: false
     }
   };
 

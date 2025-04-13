@@ -134,9 +134,18 @@ export function useAuth() {
       user: null,
       isLoading: false,
       error: null,
-      loginMutation: {} as any,
-      logoutMutation: {} as any,
-      registerMutation: {} as any,
+      loginMutation: {
+        mutate: () => {},
+        isPending: false,
+      } as any,
+      logoutMutation: {
+        mutate: () => {},
+        isPending: false,
+      } as any,
+      registerMutation: {
+        mutate: () => {},
+        isPending: false,
+      } as any,
       isAdmin: false,
       isResponseTeam: false
     };

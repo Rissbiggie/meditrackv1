@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
-import { UserRole } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
+import { UserRole, InsertUser } from "@shared/schema";
+import { useAuth } from "@/hooks/use-auth";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -27,8 +26,8 @@ const formSchema = z.object({
 });
 
 export function RegisterForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { registerMutation } = useAuth();
+  const isLoading = registerMutation.isPending;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,16 +44,17 @@ export function RegisterForm() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
+    const userData: InsertUser = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      username: values.username,
+      email: values.email,
+      phone: values.phone,
+      password: values.password,
+      role: UserRole.USER
+    };
     
-    // Simulate registration
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Registration Note",
-        description: "Registration system is under maintenance. Please try again later.",
-      });
-    }, 1500);
+    registerMutation.mutate(userData);
   };
 
   return (

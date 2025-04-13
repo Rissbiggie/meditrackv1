@@ -195,7 +195,7 @@ export function useEmergency() {
       isEmergencyModalOpen: false,
       openEmergencyModal: () => {},
       closeEmergencyModal: () => {},
-      submitEmergency: () => {},
+      submitEmergency: (data: any) => {},
       isSubmittingEmergency: false,
       activeEmergencies: null,
       isLoadingEmergencies: false,

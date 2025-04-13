@@ -8,7 +8,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
+import { LoginUser } from "@shared/schema";
 
 const formSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -17,9 +18,9 @@ const formSchema = z.object({
 });
 
 export function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { toast } = useToast();
+  const { loginMutation } = useAuth();
+  const isLoading = loginMutation.isPending;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -31,16 +32,12 @@ export function LoginForm() {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setIsLoading(true);
+    const loginData: LoginUser = {
+      username: values.username,
+      password: values.password
+    };
     
-    // Simulate login
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Login Note",
-        description: "Authentication system is under maintenance. Please try again later.",
-      });
-    }, 1500);
+    loginMutation.mutate(loginData);
   };
 
   return (
