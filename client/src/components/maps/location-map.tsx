@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface LocationMapProps {
   latitude: number;
@@ -22,15 +22,17 @@ export function LocationMap({
     // Initialize map when component mounts
     if (!mapRef.current) return;
 
+    const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyBniFa_mO6eSvzeS_yJi_kZLTvIwHcmpgQ'; //Use REACT_APP_ prefix for env variables in React
+
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyBniFa_mO6eSvzeS_yJi_kZLTvIwHcmpgQ'}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.onload = initMap;
     document.head.appendChild(script);
 
     function initMap() {
       if (!mapRef.current) return;
-      
+
       try {
         // Create the map instance
         mapInstanceRef.current = new google.maps.Map(mapRef.current, {
@@ -162,7 +164,7 @@ export function LocationMap({
         script.parentNode.removeChild(script);
       }
     };
-  }, [latitude, longitude, zoom]);
+  }, [latitude, longitude, zoom, apiKey]);
 
   // Update map when position changes
   useEffect(() => {

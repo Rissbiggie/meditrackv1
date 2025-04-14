@@ -21,6 +21,9 @@ export function EmergencyModal() {
   const [locationData, setLocationData] = useState<{latitude: number; longitude: number} | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
 
+  // Import React and useEffect
+  import React, { useState, useEffect } from 'react';
+
   useEffect(() => {
     if (isEmergencyModalOpen) {
       setIsLoadingLocation(true);
