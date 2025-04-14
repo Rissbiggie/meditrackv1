@@ -128,11 +128,11 @@ export function EmergencyModal() {
 
         <div className="flex space-x-3">
           <Button 
-            className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
+            className="flex-1 bg-red-500/80 hover:bg-red-500/90 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300"
             onClick={closeEmergencyModal}
             disabled={isSubmittingEmergency}
           >
-            Cancel
+            Cancel Emergency
           </Button>
           <Button 
             className="flex-1 bg-accent hover:bg-accent/90 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 flex items-center justify-center"
