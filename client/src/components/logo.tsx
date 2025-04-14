@@ -38,7 +38,7 @@ export function Logo({ size = "md", showTagline = true, className }: LogoProps) 
         <Heartbeat size={sizeMap[size].heartbeat as "sm" | "md" | "lg"} />
         <div className={cn("absolute", sizeMap[size].crossSize)}>
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 9h6v2h2v2h-2v2H9v-2H7v-2h2V9z" fill="currentColor"/>
+            <path d="M11 7h2v4h4v2h-4v4h-2v-4H7v-2h4V7z" fill="#FF0000"/>
           </svg>
         </div>
       </div>
