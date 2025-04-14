@@ -120,7 +120,7 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
           {getUserRoleBadge()}
         </div>
       </div>
-      <p className="text-white/70 text-xs text-center pb-2">Track Emergency, Save Lives</p>
+      <p className="text-blue-900 text-xs text-center pb-2 font-medium">Track Emergency, Save Lives</p>
     </header>
   );
 }
