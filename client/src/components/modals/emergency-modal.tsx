@@ -17,7 +17,22 @@ export function EmergencyModal() {
   } = useEmergency();
   const [emergencyType, setEmergencyType] = useState("");
   const [description, setDescription] = useState("");
-  const { latitude, longitude, isLoading: isLoadingLocation } = useLocation();
+  const { getCurrentLocation } = useLocation();
+  const [locationData, setLocationData] = useState<{latitude: number; longitude: number} | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+
+  useEffect(() => {
+    if (isEmergencyModalOpen) {
+      setIsLoadingLocation(true);
+      getCurrentLocation()
+        .then(loc => {
+          if (loc) {
+            setLocationData(loc);
+          }
+        })
+        .finally(() => setIsLoadingLocation(false));
+    }
+  }, [isEmergencyModalOpen]);
 
   const handleSubmit = () => {
     if (!emergencyType) {
@@ -53,9 +68,9 @@ export function EmergencyModal() {
             <div className="h-40 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
-          ) : latitude && longitude ? (
+          ) : locationData ? (
             <div className="h-40 rounded-lg overflow-hidden">
-              <LocationMap latitude={latitude} longitude={longitude} />
+              <LocationMap latitude={locationData.latitude} longitude={locationData.longitude} />
             </div>
           ) : (
             <div className="h-40 bg-gray-800/50 rounded-lg flex items-center justify-center">
