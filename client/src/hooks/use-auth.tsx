@@ -1,76 +1,117 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { UserRole } from '@shared/schema';
+import { useToast } from './use-toast';
 
 interface User {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
   role: UserRole;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  loginMutation: any;
+  logoutMutation: any;
+  registerMutation: any;
+  isAdmin: boolean;
+  isResponseTeam: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
 
   const { data: session, isLoading } = useQuery({
-    queryKey: ['session'],
+    queryKey: ['/api/user'],
     queryFn: async () => {
-      const res = await fetch('/api/auth/session');
-      if (!res.ok) throw new Error('Failed to fetch session');
+      const res = await fetch('/api/user');
+      if (!res.ok) return null;
       return res.json();
     }
   });
 
   useEffect(() => {
     if (session) {
-      setUser(session.user);
+      setUser(session);
     }
   }, [session]);
 
-  const login = async (email: string, password: string) => {
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: { email: string; password: string }) => {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+      });
+      if (!res.ok) throw new Error('Login failed');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setUser(data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${data.user.firstName}!`,
+      });
+    }
+  });
 
-    if (!res.ok) throw new Error('Login failed');
-    const data = await res.json();
-    setUser(data.user);
-    queryClient.invalidateQueries({ queryKey: ['session'] });
-  };
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (!res.ok) throw new Error('Logout failed');
+    },
+    onSuccess: () => {
+      setUser(null);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+    }
+  });
 
-  const register = async (email: string, password: string) => {
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+  const registerMutation = useMutation({
+    mutationFn: async (userData: any) => {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+      if (!res.ok) throw new Error('Registration failed');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setUser(data.user);
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      toast({
+        title: "Registration successful",
+        description: "Your account has been created successfully",
+      });
+    }
+  });
 
-    if (!res.ok) throw new Error('Registration failed');
-    const data = await res.json();
-    setUser(data.user);
-    queryClient.invalidateQueries({ queryKey: ['session'] });
-  };
-
-  const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    queryClient.invalidateQueries({ queryKey: ['session'] });
-  };
+  const isAdmin = user?.role === UserRole.ADMIN;
+  const isResponseTeam = user?.role === UserRole.RESPONSE_TEAM;
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{
+      user,
+      isLoading,
+      loginMutation,
+      logoutMutation,
+      registerMutation,
+      isAdmin,
+      isResponseTeam
+    }}>
       {children}
     </AuthContext.Provider>
   );
