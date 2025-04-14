@@ -7,6 +7,7 @@ import { Loader2, MapPin, Ambulance } from "lucide-react";
 import { LocationMap } from "@/components/maps/location-map";
 import { useLocation } from "@/hooks/use-maps";
 import { Icon } from "@/components/ui/icon";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function EmergencyModal() {
   const { 
@@ -49,7 +50,8 @@ export function EmergencyModal() {
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-      <div className="bg-primary border border-accent/50 rounded-xl max-w-md w-full p-5 shadow-2xl">
+      <div className="bg-primary border border-accent/50 rounded-xl max-w-md w-full h-[90vh] shadow-2xl">
+        <ScrollArea className="h-full p-5">
         <div className="text-center mb-4">
           <div className="w-16 h-16 mx-auto relative animate-pulse">
             <Heartbeat size="lg" className="text-[#EF4444]" />
@@ -152,6 +154,7 @@ export function EmergencyModal() {
             )}
           </Button>
         </div>
+      </ScrollArea>
       </div>
     </div>
   );
