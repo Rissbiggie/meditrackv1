@@ -57,7 +57,7 @@ export function useLocation(): UseLocationResult {
         setIsLoading(false);
         toast({
           title: "Location Error",
-          description: "Geolocation is not supported by your browser",
+          description: "Please enable location access in your browser settings",
           variant: "destructive",
         });
         resolve(null);
@@ -97,13 +97,27 @@ export function useLocation(): UseLocationResult {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+    // Check if we have permission first
+    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      if (result.state === 'denied') {
+        setError("Location access denied. Please enable it in your browser settings.");
+        setIsLoading(false);
+        toast({
+          title: "Location Access Required",
+          description: "Please enable location access to use this feature",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
 
-    const watchId = navigator.geolocation.watchPosition(onSuccess, onError, options);
+      const watchId = navigator.geolocation.watchPosition(onSuccess, onError, options);
 
-    return () => {
-      navigator.geolocation.clearWatch(watchId);
-    };
+      return () => {
+        navigator.geolocation.clearWatch(watchId);
+      };
+    });
   }, []);
 
   return { latitude, longitude, error, isLoading, getCurrentLocation };
