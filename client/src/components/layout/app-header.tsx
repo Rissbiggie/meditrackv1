@@ -3,6 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Bell, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLocation } from "wouter";
 import { Heartbeat } from "@/components/ui/heartbeat";
 import { Icon } from "@/components/ui/icon";
@@ -114,9 +115,21 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
         </div>
 
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" className="text-white rounded-full bg-white/10 h-9 w-9 flex items-center justify-center mr-2">
-            <Bell size={16} />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-white rounded-full bg-white/10 h-9 w-9 flex items-center justify-center mr-2">
+                <Bell size={16} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="space-y-4">
+                <div className="font-medium">Notifications</div>
+                <div className="text-sm text-muted-foreground">
+                  No new notifications
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
           {getUserRoleBadge()}
         </div>
       </div>
