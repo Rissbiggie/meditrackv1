@@ -8,8 +8,8 @@ import { useToast } from './use-toast';
 interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   role: UserRole;
 }
 
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   const { data: session, isLoading } = useQuery({
-    queryKey: ['/api/user'],
+    queryKey: ['auth-session'],
     queryFn: async () => {
       const res = await fetch('/api/user');
       if (!res.ok) return null;
@@ -56,27 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (data) => {
       setUser(data.user);
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries({ queryKey: ['auth-session'] });
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${data.user.firstName}!`,
+        title: "Success",
+        description: "Logged in successfully",
       });
-    }
-  });
-
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/auth/logout', { method: 'POST' });
-      if (!res.ok) throw new Error('Logout failed');
     },
-    onSuccess: () => {
-      setUser(null);
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
-      });
-    }
   });
 
   const registerMutation = useMutation({
@@ -91,12 +76,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (data) => {
       setUser(data.user);
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries({ queryKey: ['auth-session'] });
       toast({
-        title: "Registration successful",
-        description: "Your account has been created successfully",
+        title: "Success",
+        description: "Registered successfully",
       });
-    }
+    },
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      if (!res.ok) throw new Error('Logout failed');
+      return res.json();
+    },
+    onSuccess: () => {
+      setUser(null);
+      queryClient.invalidateQueries({ queryKey: ['auth-session'] });
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
+    },
   });
 
   const isAdmin = user?.role === UserRole.ADMIN;
