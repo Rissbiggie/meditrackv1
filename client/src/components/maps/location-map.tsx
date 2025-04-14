@@ -23,7 +23,7 @@ export function LocationMap({
     if (!mapRef.current) return;
 
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyBniFa_mO6eSvzeS_yJi_kZLTvIwHcmpgQ'}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBniFa_mO6eSvzeS_yJi_kZLTvIwHcmpgQ'}&libraries=places`;
     script.async = true;
     script.onload = initMap;
     document.head.appendChild(script);
