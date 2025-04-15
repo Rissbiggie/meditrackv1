@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { UserRole } from '@shared/schema';
 import { useToast } from './use-toast';
+import { useLocation } from 'wouter';
 
 interface User {
   id: string;
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [user, setUser] = useState<User | null>(null);
 
   const { data: session, isLoading } = useQuery({
@@ -85,21 +87,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/auth/logout', { 
-        method: 'POST',
-        credentials: 'include'
-      });
-      if (!res.ok) throw new Error('Logout failed');
-      return res.json();
+      try {
+        const res = await fetch('/api/logout', { 
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!res.ok) {
+          const error = await res.json().catch(() => ({ message: 'Logout failed' }));
+          throw new Error(error.message || 'Logout failed');
+        }
+        
+        return res;
+      } catch (error) {
+        console.error('Logout error:', error);
+        // If it's a network error, we should still clear local data
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          // Clear user data
+          setUser(null);
+          localStorage.removeItem('auth_token');
+          queryClient.clear();
+          // Navigate to auth page
+          window.location.href = '/auth';
+          return;
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
+      // Clear user data
       setUser(null);
-      queryClient.invalidateQueries({ queryKey: ['auth-session'] });
+      localStorage.removeItem('auth_token');
+      
+      // Clear all queries
+      queryClient.clear();
+      
+      // Show success message
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
+      
+      // Navigate to auth page
+      window.location.href = '/auth';
     },
+    onError: (error: Error) => {
+      console.error('Logout error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   const isAdmin = user?.role === UserRole.ADMIN;

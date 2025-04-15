@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
-import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
+import { Icon } from "@/components/ui/icon";
 import { LoginUser } from "@shared/schema";
 
 interface LoginFormProps {
@@ -38,9 +38,7 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
       username: values.username,
       password: values.password
     };
-    
     onSubmit(loginData);
-    window.location.href = '/';
   };
 
   return (
@@ -58,6 +56,7 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
                   type="text"
                   placeholder="your username"
                   className="w-full bg-white/20 rounded-lg px-4 py-3 text-white border border-white/10 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+                  disabled={isPending}
                 />
               </FormControl>
               <FormMessage />
@@ -76,6 +75,7 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
                   type="password"
                   placeholder="••••••••"
                   className="w-full bg-white/20 rounded-lg px-4 py-3 text-white border border-white/10 focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary"
+                  disabled={isPending}
                 />
               </FormControl>
               <div className="flex justify-end">
@@ -85,7 +85,8 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
             </FormItem>
           )}
         />
-        <div>
+        
+        <div className="mt-4">
           <label className="flex items-center text-white/80 text-sm">
             <Checkbox 
               checked={rememberMe} 
@@ -115,13 +116,13 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
         <p className="text-white/70 text-sm">Or continue with</p>
         <div className="flex justify-center space-x-4 mt-3">
           <Button variant="outline" size="icon" className="bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-all border-0">
-            <FaGoogle className="text-lg" />
+            <Icon name="google" className="h-5 w-5" />
           </Button>
           <Button variant="outline" size="icon" className="bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-all border-0">
-            <FaFacebookF className="text-lg" />
+            <Icon name="facebook" className="h-5 w-5" />
           </Button>
           <Button variant="outline" size="icon" className="bg-white/10 hover:bg-white/20 text-white rounded-full p-3 transition-all border-0">
-            <FaApple className="text-lg" />
+            <Icon name="apple" className="h-5 w-5" />
           </Button>
         </div>
       </div>

@@ -21,11 +21,17 @@ import { LiveChat } from "@/components/chat/live-chat";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { UserRole } from "@shared/schema";
 import { useEffect } from "react";
-import { connectWebSocket } from "@/lib/websocket";
+import { connectWebSocket, disconnectWebSocket } from "@/lib/websocket";
 
 function App() {
   useEffect(() => {
+    // Connect WebSocket when component mounts
     connectWebSocket();
+
+    // Cleanup WebSocket when component unmounts
+    return () => {
+      disconnectWebSocket();
+    };
   }, []);
 
   return (
@@ -33,34 +39,47 @@ function App() {
       <AuthProvider>
         <EmergencyProvider>
           <Switch>
-            <Route path="/home">
-              <ProtectedRoute path="/home" component={HomePage} />
+            <Route path="/" component={HomePage} />
+            <Route path="/auth" component={AuthPage} />
+            <Route path="/dashboard">
+              <ProtectedRoute path="/dashboard" component={DashboardPage} />
             </Route>
-            <ProtectedRoute path="/" component={HomePage} />
-            <ProtectedRoute path="/dashboard" component={DashboardPage} />
-            <ProtectedRoute path="/services" component={ServicesPage} />
-            <ProtectedRoute path="/settings" component={SettingsPage} />
-            <ProtectedRoute path="/account-settings" component={AccountSettingsPage} />
-            <ProtectedRoute path="/help-center" component={HelpCenterPage} />
-            <ProtectedRoute path="/contact-support" component={ContactSupportPage} />
-            <ProtectedRoute path="/privacy-policy" component={PrivacyPolicyPage} />
-            <ProtectedRoute path="/terms-of-service" component={TermsOfServicePage} />
-            <ProtectedRoute 
-              path="/admin" 
-              component={AdminPage} 
-              allowedRoles={[UserRole.ADMIN]} 
-            />
-            <ProtectedRoute 
-              path="/response-team" 
-              component={ResponseTeamPage} 
-              allowedRoles={[UserRole.RESPONSE_TEAM]} 
-            />
-            <Route path="/auth">
-              <AuthPage />
+            <Route path="/services">
+              <ProtectedRoute path="/services" component={ServicesPage} />
             </Route>
-            <Route>
-              <NotFound />
+            <Route path="/settings">
+              <ProtectedRoute path="/settings" component={SettingsPage} />
             </Route>
+            <Route path="/account-settings">
+              <ProtectedRoute path="/account-settings" component={AccountSettingsPage} />
+            </Route>
+            <Route path="/help-center">
+              <ProtectedRoute path="/help-center" component={HelpCenterPage} />
+            </Route>
+            <Route path="/contact-support">
+              <ProtectedRoute path="/contact-support" component={ContactSupportPage} />
+            </Route>
+            <Route path="/privacy-policy">
+              <ProtectedRoute path="/privacy-policy" component={PrivacyPolicyPage} />
+            </Route>
+            <Route path="/terms-of-service">
+              <ProtectedRoute path="/terms-of-service" component={TermsOfServicePage} />
+            </Route>
+            <Route path="/admin">
+              <ProtectedRoute 
+                path="/admin" 
+                component={AdminPage} 
+                allowedRoles={[UserRole.ADMIN]} 
+              />
+            </Route>
+            <Route path="/response-team">
+              <ProtectedRoute 
+                path="/response-team" 
+                component={ResponseTeamPage} 
+                allowedRoles={[UserRole.RESPONSE_TEAM]} 
+              />
+            </Route>
+            <Route component={NotFound} />
           </Switch>
           <LiveChat />
           <Toaster />
