@@ -60,6 +60,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add emergency contact
+  app.post("/api/emergency-contacts", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const contactData = {
+        ...req.body,
+        userId: req.user.id
+      };
+      const contact = await storage.createEmergencyContact(contactData);
+      return res.status(201).json(contact);
+    } catch (error) {
+      console.error("Error creating emergency contact:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update emergency contact
+  app.put("/api/emergency-contacts/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const contactId = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContactById(contactId);
+
+      if (!contact) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+
+      if (contact.userId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      const updatedContact = await storage.updateEmergencyContact(contactId, req.body);
+      return res.json(updatedContact);
+    } catch (error) {
+      console.error("Error updating emergency contact:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Delete emergency contact
+  app.delete("/api/emergency-contacts/:id", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const contactId = parseInt(req.params.id);
+      const contact = await storage.getEmergencyContactById(contactId);
+
+      if (!contact) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+
+      if (contact.userId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized" });
+      }
+
+      await storage.deleteEmergencyContact(contactId);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting emergency contact:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Create emergency alert
   app.post("/api/emergencies", async (req, res) => {
     if (!req.isAuthenticated()) {

@@ -46,7 +46,10 @@ export interface IStorage {
   
   // Emergency contact operations
   getEmergencyContactsByUserId(userId: number): Promise<EmergencyContact[]>;
+  getEmergencyContactById(id: number): Promise<EmergencyContact | undefined>;
   createEmergencyContact(contact: InsertEmergencyContact): Promise<EmergencyContact>;
+  updateEmergencyContact(id: number, data: Partial<InsertEmergencyContact>): Promise<EmergencyContact>;
+  deleteEmergencyContact(id: number): Promise<void>;
   
   // Emergency alert operations
   createEmergencyAlert(alert: InsertEmergencyAlert): Promise<EmergencyAlert>;
@@ -167,11 +170,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(emergencyContacts.userId, userId));
   }
   
+  async getEmergencyContactById(id: number): Promise<EmergencyContact | undefined> {
+    const [contact] = await db.select()
+      .from(emergencyContacts)
+      .where(eq(emergencyContacts.id, id));
+    return contact;
+  }
+  
   async createEmergencyContact(contactData: InsertEmergencyContact): Promise<EmergencyContact> {
     const [contact] = await db.insert(emergencyContacts)
       .values(contactData)
       .returning();
     return contact;
+  }
+  
+  async updateEmergencyContact(id: number, data: Partial<InsertEmergencyContact>): Promise<EmergencyContact> {
+    const [contact] = await db.update(emergencyContacts)
+      .set(data)
+      .where(eq(emergencyContacts.id, id))
+      .returning();
+    return contact;
+  }
+  
+  async deleteEmergencyContact(id: number): Promise<void> {
+    await db.delete(emergencyContacts)
+      .where(eq(emergencyContacts.id, id));
   }
   
   // Emergency alert operations

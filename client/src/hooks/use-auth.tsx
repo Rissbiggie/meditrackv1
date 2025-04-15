@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
@@ -86,7 +85,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/auth/logout', { method: 'POST' });
+      const res = await fetch('/api/auth/logout', { 
+        method: 'POST',
+        credentials: 'include'
+      });
       if (!res.ok) throw new Error('Logout failed');
       return res.json();
     },

@@ -12,6 +12,12 @@ import ServicesPage from "@/pages/services-page";
 import SettingsPage from "@/pages/settings-page";
 import AdminPage from "@/pages/admin-page";
 import ResponseTeamPage from "@/pages/response-team-page";
+import HelpCenterPage from "@/pages/help-center-page";
+import ContactSupportPage from "@/pages/contact-support-page";
+import PrivacyPolicyPage from "@/pages/privacy-policy-page";
+import TermsOfServicePage from "@/pages/terms-of-service-page";
+import AccountSettingsPage from "@/pages/account-settings-page";
+import { LiveChat } from "@/components/chat/live-chat";
 import { ProtectedRoute } from "@/lib/protected-route";
 import { UserRole } from "@shared/schema";
 import { useEffect } from "react";
@@ -28,14 +34,17 @@ function App() {
         <EmergencyProvider>
           <Switch>
             <Route path="/home">
-              <ProtectedRoute>
-                <HomePage />
-              </ProtectedRoute>
+              <ProtectedRoute path="/home" component={HomePage} />
             </Route>
             <ProtectedRoute path="/" component={HomePage} />
             <ProtectedRoute path="/dashboard" component={DashboardPage} />
             <ProtectedRoute path="/services" component={ServicesPage} />
             <ProtectedRoute path="/settings" component={SettingsPage} />
+            <ProtectedRoute path="/account-settings" component={AccountSettingsPage} />
+            <ProtectedRoute path="/help-center" component={HelpCenterPage} />
+            <ProtectedRoute path="/contact-support" component={ContactSupportPage} />
+            <ProtectedRoute path="/privacy-policy" component={PrivacyPolicyPage} />
+            <ProtectedRoute path="/terms-of-service" component={TermsOfServicePage} />
             <ProtectedRoute 
               path="/admin" 
               component={AdminPage} 
@@ -53,6 +62,7 @@ function App() {
               <NotFound />
             </Route>
           </Switch>
+          <LiveChat />
           <Toaster />
         </EmergencyProvider>
       </AuthProvider>

@@ -18,7 +18,11 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
   const [location, setLocation] = useLocation();
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        setLocation("/login");
+      }
+    });
   };
 
   const getUserRoleBadge = () => {
@@ -98,6 +102,33 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
                     onClick={() => setLocation("/response-team")}
                   />
                 )}
+
+                <div className="mt-6 pt-6 border-t border-white/10">
+                  <MenuItem
+                    label="Help Center"
+                    icon="help"
+                    isActive={location === "/help-center"}
+                    onClick={() => setLocation("/help-center")}
+                  />
+                  <MenuItem
+                    label="Contact Support"
+                    icon="message"
+                    isActive={location === "/contact-support"}
+                    onClick={() => setLocation("/contact-support")}
+                  />
+                  <MenuItem
+                    label="Privacy Policy"
+                    icon="shield"
+                    isActive={location === "/privacy-policy"}
+                    onClick={() => setLocation("/privacy-policy")}
+                  />
+                  <MenuItem
+                    label="Terms of Service"
+                    icon="file"
+                    isActive={location === "/terms-of-service"}
+                    onClick={() => setLocation("/terms-of-service")}
+                  />
+                </div>
               </div>
               <Button 
                 variant="ghost" 
