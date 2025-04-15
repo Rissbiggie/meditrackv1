@@ -35,6 +35,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  updateUserRole(userId: number, role: UserRole): Promise<User>;
   
   // Medical info operations
   getMedicalInfoByUserId(userId: number): Promise<MedicalInfo | undefined>;
@@ -99,6 +100,19 @@ export class DatabaseStorage implements IStorage {
   
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+  
+  async updateUserRole(userId: number, role: UserRole): Promise<User> {
+    const [updatedUser] = await db.update(users)
+      .set({ role })
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+    
+    return updatedUser;
   }
   
   // Medical info operations
@@ -329,6 +343,20 @@ export class DatabaseStorage implements IStorage {
   // Seed the database with sample data if needed
   private async seedDatabaseIfNeeded(): Promise<void> {
     try {
+      // Check if the tables exist
+      const tableExists = await db.execute(sql`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_schema = 'public' 
+          AND table_name = 'ambulance_units'
+        );
+      `);
+      
+      if (!tableExists.rows[0].exists) {
+        console.log("Tables do not exist yet. Skipping seeding...");
+        return;
+      }
+
       // Check if we already have ambulance units
       const existingAmbulances = await db.select().from(ambulanceUnits);
       

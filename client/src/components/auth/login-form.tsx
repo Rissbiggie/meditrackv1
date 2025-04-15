@@ -40,7 +40,7 @@ export function LoginForm({ onSubmit, isPending }: LoginFormProps) {
     };
     
     onSubmit(loginData);
-    window.location.href = '/home';
+    window.location.href = '/';
   };
 
   return (
