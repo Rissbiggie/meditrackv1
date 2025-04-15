@@ -16,7 +16,8 @@ import {
   type AmbulanceUnit,
   type InsertAmbulanceUnit,
   type MedicalFacility,
-  type InsertMedicalFacility
+  type InsertMedicalFacility,
+  UserRole
 } from "@shared/schema";
 import session from "express-session";
 import createMemoryStore from "memorystore";
@@ -36,6 +37,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserRole(userId: number, role: UserRole): Promise<User>;
+  updateUserProfile(userId: number, data: { firstName: string; lastName: string; email: string }): Promise<User>;
+  getUserCount(): Promise<number>;
   
   // Medical info operations
   getMedicalInfoByUserId(userId: number): Promise<MedicalInfo | undefined>;
@@ -63,6 +66,7 @@ export interface IStorage {
   // Medical facility operations
   getMedicalFacilities(): Promise<MedicalFacility[]>;
   getNearbyFacilities(lat: number, lng: number): Promise<MedicalFacility[]>;
+  searchFacilities(query: string, type?: string): Promise<MedicalFacility[]>;
   
   // Session storage
   sessionStore: any; // Express session store instance
@@ -113,6 +117,24 @@ export class DatabaseStorage implements IStorage {
     }
     
     return updatedUser;
+  }
+  
+  async updateUserProfile(userId: number, data: { firstName: string; lastName: string; email: string }): Promise<User> {
+    const [updatedUser] = await db.update(users)
+      .set(data)
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+    
+    return updatedUser;
+  }
+  
+  async getUserCount(): Promise<number> {
+    const result = await db.select({ count: sql`count(*)` }).from(users);
+    return Number(result[0].count);
   }
   
   // Medical info operations
@@ -304,6 +326,40 @@ export class DatabaseStorage implements IStorage {
   // Medical facility operations
   async getMedicalFacilities(): Promise<MedicalFacility[]> {
     return await db.select().from(medicalFacilities);
+  }
+  
+  async searchFacilities(query: string, type?: string): Promise<MedicalFacility[]> {
+    let facilities = await db.select().from(medicalFacilities);
+    
+    // Filter by search query if provided
+    if (query) {
+      const searchLower = query.toLowerCase();
+      facilities = facilities.filter(facility => 
+        facility.name.toLowerCase().includes(searchLower) ||
+        facility.address.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Filter by type if provided
+    if (type && type !== "all") {
+      facilities = facilities.filter(facility => {
+        const facilityType = facility.type.toLowerCase();
+        switch (type) {
+          case "hospitals":
+            return facilityType.includes("hospital");
+          case "urgent":
+            return facilityType.includes("urgent");
+          case "pharmacies":
+            return facilityType.includes("pharmacy");
+          case "specialists":
+            return facilityType.includes("specialist");
+          default:
+            return true;
+        }
+      });
+    }
+    
+    return facilities;
   }
   
   async getNearbyFacilities(lat: number, lng: number): Promise<MedicalFacility[]> {

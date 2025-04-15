@@ -5,6 +5,7 @@ import { setupAuth } from "./auth";
 import { WebSocketServer } from "ws";
 import { WebSocket } from "ws";
 import { calculateDistance } from "../client/src/hooks/use-maps";
+import { UserRole } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -289,6 +290,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile
+  app.put("/api/user/profile", async (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const { firstName, lastName, email } = req.body;
+      const updatedUser = await storage.updateUserProfile(req.user.id, {
+        firstName,
+        lastName,
+        email
+      });
+      return res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);

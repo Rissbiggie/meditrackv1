@@ -152,7 +152,7 @@ export function EmergencyProvider({ children }: { children: ReactNode }) {
     const locationInterval = setInterval(async () => {
       try {
         const location = await getCurrentLocation();
-        if (location) {
+        if (location && location.latitude && location.longitude) {
           sendWSMessage('location_update', {
             id: user.id,
             role: user.role,

@@ -21,14 +21,31 @@ export function Heartbeat({ size = "md", className }: HeartbeatProps) {
       <path
         d="M10,50 L30,50 L40,30 L50,70 L60,50 L70,50 L80,35 L90,50"
         fill="none"
-        stroke="#FF0000"
+        stroke="#FFFFFF"
         strokeWidth="4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      {/* Red Cross */}
-      <path
-        d="M45,40 L55,40 L55,45 L60,45 L60,55 L55,55 L55,60 L45,60 L45,55 L40,55 L40,45 L45,45 Z"
+      {/* Medical Cross */}
+      <rect
+        x="35"
+        y="35"
+        width="30"
+        height="30"
+        fill="#FF0000"
+      />
+      <rect
+        x="45"
+        y="25"
+        width="10"
+        height="50"
+        fill="#FF0000"
+      />
+      <rect
+        x="25"
+        y="45"
+        width="50"
+        height="10"
         fill="#FF0000"
       />
     </svg>

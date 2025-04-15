@@ -8,6 +8,7 @@ import { LocationMap } from "@/components/maps/location-map";
 import { useLocation } from "@/hooks/use-maps";
 import { Icon } from "@/components/ui/icon";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
 
 export function EmergencyModal() {
   const { 
@@ -21,19 +22,33 @@ export function EmergencyModal() {
   const { getCurrentLocation } = useLocation();
   const [locationData, setLocationData] = useState<{latitude: number; longitude: number} | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isEmergencyModalOpen) {
       setIsLoadingLocation(true);
       getCurrentLocation()
         .then(loc => {
-          if (loc) {
+          if (loc && loc.latitude && loc.longitude) {
             setLocationData(loc);
+          } else {
+            toast({
+              title: "Location Error",
+              description: "Could not determine your location. Please ensure location services are enabled.",
+              variant: "destructive",
+            });
           }
+        })
+        .catch(error => {
+          toast({
+            title: "Location Error",
+            description: error.message || "Failed to get your location",
+            variant: "destructive",
+          });
         })
         .finally(() => setIsLoadingLocation(false));
     }
-  }, [isEmergencyModalOpen]);
+  }, [isEmergencyModalOpen, getCurrentLocation, toast]);
 
   const handleSubmit = () => {
     if (!emergencyType) {

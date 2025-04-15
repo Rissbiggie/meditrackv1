@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface LocationMapProps {
   latitude: number;
@@ -17,6 +18,8 @@ export function LocationMap({
 }: LocationMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     // Initialize map when component mounts
@@ -26,6 +29,14 @@ export function LocationMap({
     script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBniFa_mO6eSvzeS_yJi_kZLTvIwHcmpgQ'}&libraries=places`;
     script.async = true;
     script.onload = initMap;
+    script.onerror = () => {
+      setMapError("Failed to load Google Maps");
+      toast({
+        title: "Map Error",
+        description: "Failed to load Google Maps. Please check your internet connection.",
+        variant: "destructive",
+      });
+    };
     document.head.appendChild(script);
 
     function initMap() {
@@ -154,6 +165,12 @@ export function LocationMap({
         });
       } catch (error) {
         console.error('Error initializing map:', error);
+        setMapError("Failed to initialize map");
+        toast({
+          title: "Map Error",
+          description: "Failed to initialize map. Please try again.",
+          variant: "destructive",
+        });
       }
     }
 
@@ -162,14 +179,28 @@ export function LocationMap({
         script.parentNode.removeChild(script);
       }
     };
-  }, [latitude, longitude, zoom]);
+  }, [latitude, longitude, zoom, markers, toast]);
 
   // Update map when position changes
   useEffect(() => {
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.setCenter({ lat: latitude, lng: longitude });
+      try {
+        mapInstanceRef.current.setCenter({ lat: latitude, lng: longitude });
+      } catch (error) {
+        console.error('Error updating map center:', error);
+      }
     }
   }, [latitude, longitude]);
+
+  if (mapError) {
+    return (
+      <div className={`w-full h-full rounded-lg overflow-hidden bg-gray-800/50 flex items-center justify-center ${className || ''}`}>
+        <div className="text-white/40 text-center">
+          <p className="text-sm">{mapError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 

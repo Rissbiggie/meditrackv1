@@ -42,7 +42,7 @@ export function Logo({ size = "md", showTagline = true, className }: LogoProps) 
           </svg>
         </div>
       </div>
-      <h1 className={cn("font-bold text-white font-sans mb-1", sizeMap[size].title)}>
+      <h1 className={cn("font-bold font-sans mb-1 text-primary", sizeMap[size].title)}>
         MediTrack
       </h1>
       {showTagline && (

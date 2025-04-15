@@ -51,7 +51,9 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
             <div className="py-6 flex flex-col h-full">
               <div className="flex items-center space-x-2">
                 <Heartbeat size="sm" />
-                <h2 className="text-xl font-bold">MediTrack</h2>
+                <h2 className="text-xl font-bold">
+                  <span className="text-white">Medi</span><span className="text-blue-600 font-extrabold">Track</span>
+                </h2>
               </div>
               <div className="mt-6 flex-1 flex flex-col space-y-1">
                 <MenuItem
@@ -111,7 +113,9 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
 
         <div className="flex items-center">
           <Heartbeat size="sm" className="mr-2" />
-          <h1 className="text-white font-semibold text-lg">{title}</h1>
+          <h1 className="font-semibold text-lg">
+            <span className="text-white">Medi</span><span className="text-blue-600 font-extrabold">Track</span>
+          </h1>
         </div>
 
         <div className="flex items-center">
@@ -133,7 +137,7 @@ export function AppHeader({ title = "MediTrack" }: AppHeaderProps) {
           {getUserRoleBadge()}
         </div>
       </div>
-      <p className="text-blue-900 text-xs text-center pb-2 font-medium">Track Emergency, Save Lives</p>
+      <p className="text-blue-900 text-xs text-center pb-2 font-medium">Track Emergencies, Save Lives</p>
     </header>
   );
 }
